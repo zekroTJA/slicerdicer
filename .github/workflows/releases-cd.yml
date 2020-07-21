@@ -1,0 +1,47 @@
+name: Releases CD
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  releases-deploy:
+
+    name: GitHub Releases Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+
+      - name: Set up Hub
+        run: |
+          sudo snap install hub --classic
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build linux release
+        env:
+          GOOS: 'linux'
+          GOARCH: 'amd64'
+        run: |
+          go build -v -o bin/slicerdicer_linux_amd64 cmd/main.go
+
+      - name: Build windows release
+        env:
+          GOOS: 'windows'
+          GOARCH: 'amd64'
+        run: |
+          go build -v -o bin/slicerdicer_win_amd64.exe cmd/main.go
+
+      - name: Deploy to Releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: 'hub release create
+            -a bin/*
+            -m $(git describe --tags --abbrev=0)
+            $(git describe --tags --abbrev=0)'
