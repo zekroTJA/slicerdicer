@@ -42,6 +42,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: 'hub release create
-            -a bin/*
+            -a bin/slicerdicer_linux_amd64
+            -a bin/slicerdicer_win_amd64.exe
             -m $(git describe --tags --abbrev=0)
             $(git describe --tags --abbrev=0)'
