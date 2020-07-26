@@ -9,10 +9,12 @@ import (
 	"image/png"
 	"io"
 	"log"
+	"math"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/nfnt/resize"
 	"github.com/zekroTJA/slicerdicer/pkg/slicerdicer"
 )
 
@@ -22,6 +24,7 @@ var (
 	flagOutLocation   = flag.String("o", "results", "output files location")
 	flagOutTyp        = flag.String("otyp", "png", "output image file type")
 	flagOutName       = flag.String("oname", "slice", "output name prefix")
+	flagScale         = flag.Float64("scale", 1, "The scale of the result images as multiplier.")
 )
 
 func checkErr(err error) {
@@ -83,11 +86,27 @@ func writeImage(encoder func(io.Writer, image.Image) error, i image.Image, name 
 	return encoder(f, i)
 }
 
+func resizeImage(img image.Image, m float64) image.Image {
+	if m == 1 {
+		return img
+	}
+
+	bounds := img.Bounds()
+	w := math.Floor(float64(bounds.Dx()) * m)
+	h := math.Floor(float64(bounds.Dy()) * m)
+
+	return resize.Resize(uint(w), uint(h), img, resize.Bicubic)
+}
+
 func main() {
 	flag.Parse()
 
 	if *flagImageFile == "" {
 		log.Fatal("Input file must be specified")
+	}
+
+	if *flagScale <= 0 {
+		log.Fatal("Scale must be larger than 0")
 	}
 
 	f, err := os.Open(*flagImageFile)
@@ -101,6 +120,8 @@ func main() {
 
 	img, err := decoder(f)
 	checkErr(err)
+
+	img = resizeImage(img, *flagScale)
 
 	res, err := slicerdicer.Slice(img, *flagSlicesPerSide)
 	checkErr(err)

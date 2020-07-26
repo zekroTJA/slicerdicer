@@ -13,6 +13,7 @@ $ go run cmd/main.go \
     -i testdata/source/pog.jpg \
     -o testdata/results \
     -s 2 \
+    -scale 0.25 \
     -oname pog
 ```
 
@@ -24,5 +25,5 @@ Results:
 
 ---
 
-© 2020 Ringo Hoffmann (zekro Development)  
+© 2020 Ringo Hoffmann (zekro Development).  
 Covered by the MIT Licence.
